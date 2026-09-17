@@ -1,4 +1,8 @@
 # MotionEmulator
+
+This fork includes a standalone [WebSocket plugin and local SDK](ws-plugin/README.md)
+fixing NaN speeds during multi-listener location dispatch. Build `ws-plugin/` to use
+the fix; rebuilding the manager application alone does not update the loaded plugin.
 <img src="art/MotionEmulator.svg" width="200">
 
 English Version | [中文文档](README_zh.md)

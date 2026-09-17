@@ -1,5 +1,7 @@
 # MotionEmulator
 
+本 fork 的定位插件修复版位于 [`ws-plugin/`](ws-plugin/README.md)。它包含可独立构建的插件及本地 SDK 源码，修复多监听器分发时速度变成 NaN 的问题；仅构建本目录管理端不会包含此修复。
+
 <img src="art/MotionEmulator.svg" width="200">
 
 [English Version](README.md) | 中文文档
