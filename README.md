@@ -22,7 +22,7 @@ To learn about the latest software and its tricks, refer to
 
 ## Releases and build
 
-[Manager 1.2.5 (AMap) and fixed plugin 1.2.3](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.5)
+[Manager 1.2.5 (AMap) and fixed plugin 1.2.4](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.5)
 are published together. The manager's download catalog and self-update use this fork.
 The manager uses the upstream **stable 1.2.2** UI/data baseline with the fixes applied;
 its [SDK models](manager-stub/README.md) are shared with the plugin.
