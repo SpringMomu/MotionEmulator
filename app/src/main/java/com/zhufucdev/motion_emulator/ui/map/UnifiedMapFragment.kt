@@ -24,6 +24,7 @@ import com.zhufucdev.motion_emulator.*
 import com.zhufucdev.motion_emulator.extension.dateString
 import com.zhufucdev.motion_emulator.extension.effectiveTimeFormat
 import com.zhufucdev.motion_emulator.extension.toPoint
+import com.zhufucdev.motion_emulator.extension.sharedPreferences
 import com.zhufucdev.me.stub.CoordinateSystem
 import com.zhufucdev.me.stub.Point
 import com.zhufucdev.me.stub.Trace
@@ -53,7 +54,10 @@ class UnifiedMapFragment : FrameLayout {
     }
 
     private fun init(args: TypedArray) {
-        provider = Provider.values()[args.getInteger(R.styleable.UnifiedMapFragment_provider, Provider.OSM.ordinal)]
+        val configured = context.sharedPreferences().getString("map_provider", null)
+        provider = Provider.values().firstOrNull { it.name.equals(configured, ignoreCase = true) }
+            ?: Provider.values()[args.getInteger(R.styleable.UnifiedMapFragment_provider, Provider.OSM.ordinal)]
+        args.recycle()
     }
 
     private val container = FrameLayout(context)
@@ -66,12 +70,15 @@ class UnifiedMapFragment : FrameLayout {
         AMAP, GCP_MAPS, OSM
     }
 
+    private var mapInitialized = false
     var provider: Provider = Provider.OSM
         set(value) {
-            if (field == value && controller != null) return
+            if (field == value && mapInitialized) return
+            mapInitialized = true
+            field = value
+            controller = null
             removeAllViews()
             initializeAs(value)
-            field = value
         }
 
     var controller: MapController? = null
@@ -128,6 +135,10 @@ class UnifiedMapFragment : FrameLayout {
     }
 
     private fun notifyReady(controller: MapController) {
+        if (provider == Provider.AMAP) {
+            val saved = context.sharedPreferences().getString("map_style_amap", MapStyle.NORMAL.name)
+            controller.displayStyle = MapStyle.values().firstOrNull { it.name == saved } ?: MapStyle.NORMAL
+        }
         onReady.forEach { it.invoke(controller) }
         onReady.clear()
     }
@@ -138,7 +149,8 @@ class AMapFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         map = MapView(container?.context)
         map.onCreate(savedInstanceState)
-        getter?.invoke(map.map)
+        // Camera updates before the native map is loaded can be discarded.
+        map.map.setOnMapLoadedListener { getter?.invoke(map.map) }
         return map
     }
 

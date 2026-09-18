@@ -19,6 +19,7 @@ import android.widget.SearchView
 import android.widget.SimpleCursorAdapter
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import androidx.core.content.edit
 import androidx.lifecycle.lifecycleScope
 import com.aventrix.jnanoid.jnanoid.NanoIdUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -76,6 +77,15 @@ class TraceDrawingActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu): Boolean {
         menu.findItem(R.id.app_bar_type_satellite)?.isVisible =
             getProvider("map_provider") != UnifiedMapFragment.Provider.OSM
+        val currentStyle = binding.mapUnified.controller?.displayStyle
+        val selectedItem = when (currentStyle) {
+            MapStyle.NORMAL -> R.id.app_bar_type_common
+            MapStyle.SATELLITE -> R.id.app_bar_type_satellite
+            MapStyle.NIGHT -> R.id.app_bar_type_night
+            null -> null
+        }
+        // Exclusive menu groups must only check the selected item.
+        selectedItem?.let { menu.findItem(it)?.isChecked = true }
         val search = menu.findItem(R.id.app_bar_search).actionView as SearchView
         initializeSearch(search)
         return true
@@ -224,13 +234,19 @@ class TraceDrawingActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        binding.mapUnified.controller?.displayStyle = when (item.itemId) {
+        val style = when (item.itemId) {
             R.id.app_bar_type_common -> MapStyle.NORMAL
             R.id.app_bar_type_satellite -> MapStyle.SATELLITE
             R.id.app_bar_type_night -> MapStyle.NIGHT
             else -> return false
         }
-        return binding.mapUnified.controller != null
+        val controller = binding.mapUnified.controller ?: return false
+        controller.displayStyle = style
+        if (getProvider("map_provider") == UnifiedMapFragment.Provider.AMAP) {
+            preferences.edit { putString("map_style_amap", style.name) }
+        }
+        item.isChecked = true
+        return true
     }
 
     private var currentTool: ToolCallback<*> = MoveToolCallback

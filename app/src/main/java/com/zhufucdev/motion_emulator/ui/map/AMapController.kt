@@ -60,7 +60,7 @@ class AMapController(private val map: AMap, context: Context) : MapController(co
     override fun moveCamera(location: Point, focus: Boolean, animate: Boolean) {
         val camera = CameraUpdateFactory.newLatLngZoom(
             location.ensureAmapCoordinate(context).toAmapLatLng(),
-            if (focus) 40F else 10F
+            if (focus) 18F else 14F
         )
         if (animate) map.animateCamera(camera)
         else map.moveCamera(camera)
@@ -130,7 +130,7 @@ class AMapController(private val map: AMap, context: Context) : MapController(co
         map.projection.fromScreenLocation(android.graphics.Point(x, y)).toPoint()
 
     override suspend fun getAddress(point: Point): String? {
-        return getAddressWithAmap(point.ensureAmapCoordinate(context).toAmapLatLng())
+        return getAddressWithAmap(point.ensureAmapCoordinate(context).toAmapLatLng(), context)
     }
 
     override fun cameraCenter(): Point = map.cameraPosition.target.toPoint()

@@ -16,9 +16,12 @@ class MeApplication : Application() {
         prefs.edit {
             for (key in listOf("map_provider", "poi_provider")) {
                 val provider = prefs.getString(key, null)
-                if (provider == null || (provider == "amap" && missingAmap) ||
-                    (provider == "gcp_maps" && missingGoogle)) putString(key, "osm")
+                if (!missingAmap && !prefs.getBoolean("amap_default_applied", false)) {
+                    putString(key, "amap")
+                } else if (provider == null || (provider == "amap" && missingAmap) ||
+                    (provider == "gcp_maps" && missingGoogle)) putString(key, if (missingAmap) "osm" else "amap")
             }
+            if (!missingAmap) putBoolean("amap_default_applied", true)
         }
         Plugins.init(this)
     }

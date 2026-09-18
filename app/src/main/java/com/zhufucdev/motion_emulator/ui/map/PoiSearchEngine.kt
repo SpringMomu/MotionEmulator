@@ -4,22 +4,17 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import com.amap.api.services.core.LatLonPoint
+import com.amap.api.services.geocoder.*
+import com.zhufucdev.motion_emulator.extension.ensureAmapCoordinate
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
 import com.amap.api.services.core.PoiItemV2
 import com.amap.api.services.poisearch.PoiResultV2
 import com.amap.api.services.poisearch.PoiSearchV2
 import com.zhufucdev.me.stub.Point
-import com.zhufucdev.me.stub.toPoint
-import com.zhufucdev.motion_emulator.BuildConfig
-import com.zhufucdev.motion_emulator.extension.defaultKtorClient
 import com.zhufucdev.motion_emulator.extension.toPoint
-import com.zhufucdev.me.stub.toFixed
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.http.*
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlin.coroutines.suspendCoroutine
 
 interface PoiSearchEngine {
@@ -31,23 +26,23 @@ data class Poi(val city: String, val province: String, val name: String, val loc
 
 class AMapPoiEngine(private val context: Context) : PoiSearchEngine {
     override suspend fun search(point: Point): Poi? {
-        val req = defaultKtorClient.get("https://restapi.amap.com/v3/geocode/regeo") {
-            parameter("key", BuildConfig.amapwebkey)
-            parameter("location", "${point.longitude.toFixed(6)},${point.latitude.toFixed(6)}")
+        val gcj = point.ensureAmapCoordinate(context)
+        return withTimeoutOrNull(8000) {
+            suspendCancellableCoroutine { continuation ->
+                val search = GeocodeSearch(context)
+                search.setOnGeocodeSearchListener(object : GeocodeSearch.OnGeocodeSearchListener {
+                    override fun onRegeocodeSearched(result: RegeocodeResult?, code: Int) {
+                        if (!continuation.isActive) return
+                        val address = result?.regeocodeAddress?.takeIf { code == 1000 }
+                        continuation.resume(address?.let {
+                            Poi(it.city.orEmpty(), it.province.orEmpty(), it.formatAddress.orEmpty(), gcj)
+                        })
+                    }
+                    override fun onGeocodeSearched(result: GeocodeResult?, code: Int) = Unit
+                })
+                search.getFromLocationAsyn(RegeocodeQuery(LatLonPoint(gcj.latitude, gcj.longitude), 200F, GeocodeSearch.AMAP))
+            }
         }
-        if (!req.status.isSuccess()) return null
-        val res = req.body<JsonObject>()
-        if (res["status"]?.jsonPrimitive?.int != 1
-            || res["info"]?.jsonPrimitive?.content != "OK"
-        ) return null
-
-        val info = res["regeocode"]!!.jsonObject["addressComponent"]!!.jsonObject
-        return Poi(
-            city = info["city"].toString(),
-            province = info["province"].toString(),
-            name = res["regeocode"]!!.jsonObject["formatted_address"].toString(),
-            location = point.toPoint()
-        )
     }
 
     override suspend fun search(text: String, limit: Int): List<Poi> = suspendCoroutine { res ->

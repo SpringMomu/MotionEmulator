@@ -22,23 +22,27 @@ To learn about the latest software and its tricks, refer to
 
 ## Releases and build
 
-[Manager 1.2.4 (OpenStreetMap) and fixed plugin 1.2.3](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.4)
+[Manager 1.2.5 (AMap) and fixed plugin 1.2.3](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.5)
 are published together. The manager's download catalog and self-update use this fork.
 The manager uses the upstream **stable 1.2.2** UI/data baseline with the fixes applied;
 its [SDK models](manager-stub/README.md) are shared with the plugin.
 
-The default map is **OpenStreetMap**, with no API key required. Existing unconfigured
-AMap/Google preferences migrate to OSM. Saved GCJ-02 traces are converted for display
-without rewriting the saved route. New OSM traces use WGS84. Search uses the Android
-system geocoder where available, and accepts `latitude, longitude` without a geocoder.
-OSM needs network access, has no satellite layer, and place-search coverage depends
-on the device geocoder. Visible attribution, an app-specific User-Agent and local
-HTTP-aware caching follow the [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
-No bulk/offline tile download is offered.
+The published manager defaults to **AMap**, with standard and satellite maps available
+from the drawing screen's top-right menu. The chosen map mode is remembered, including
+route previews. Upgrading from 1.2.4 selects AMap once; subsequent provider choices are
+respected. POI search and reverse geocoding use the Android SDK key; no Web Service
+key is needed. Android keys are configured locally and are not committed to Git.
+
+**OpenStreetMap** remains available in settings and is the default for source builds
+without an AMap key. Its geocoder is provided by Android, with `latitude, longitude`
+input as a fallback. Existing WGS84 and GCJ-02 routes retain their stored coordinates;
+providers convert coordinates for display. OSM has no satellite layer and follows the
+[OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/), including
+visible attribution, an app-specific User-Agent and local HTTP-aware caching.
 
 Use JDK 17 or 21, Android SDK 34 and the included Gradle 8.9 wrapper. Set `sdk.dir` in
 an ignored `local.properties`. Placeholder map keys in `local.defaults.properties`
-allow a working OSM build. Only configure your own `AMAP_SDK_KEY`, `amap.web.key` and/or
+allow a working OSM build. Only configure your own `AMAP_SDK_KEY` and/or
 `GCP_MAPS_KEY` if you want those optional providers; Android keys must match your
 package and signing certificate. The optional `server_uri` supplies additional
 plugin catalog entries; leave it blank to use only this fork's catalog.

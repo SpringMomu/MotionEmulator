@@ -1,7 +1,7 @@
 {
   "packageName": "com.zhufucdev.motion_emulator",
-  "versionCode": 26,
-  "versionName": "1.2.4",
-  "url": "https://github.com/SpringMomu/MotionEmulator/releases/download/motionemulator-v1.2.4/motion-emulator-1.2.4-release.apk",
-  "sha256": "34ac6dc26195de620037a612f3ce16a35d2c500a8a8eb24c5eacba98c0e2d5b8"
+  "versionCode": 27,
+  "versionName": "1.2.5",
+  "url": "https://github.com/SpringMomu/MotionEmulator/releases/download/motionemulator-v1.2.5/motion-emulator-1.2.5-release.apk",
+  "sha256": "6cac7cff995a9f51c40b8ef4e4618b673559804e4aaf64cdde3978a779e4bea4"
 }
