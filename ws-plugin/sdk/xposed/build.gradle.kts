@@ -51,4 +51,6 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.android.junit)
     androidTestImplementation(libs.espresso)
+    // Test with the host SDK; never package a second AMap SDK in the plugin APK.
+    androidTestImplementation("com.amap.api:3dmap:9.5.0")
 }

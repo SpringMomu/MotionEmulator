@@ -33,14 +33,12 @@ import com.highcapable.yukihookapi.hook.log.loggerI
 import com.highcapable.yukihookapi.hook.type.android.ActivityClass
 import com.highcapable.yukihookapi.hook.type.android.BundleClass
 import com.highcapable.yukihookapi.hook.type.java.BooleanType
-import com.highcapable.yukihookapi.hook.type.java.DoubleType
 import com.highcapable.yukihookapi.hook.type.java.IntType
 import com.highcapable.yukihookapi.hook.type.java.StringClass
 import com.highcapable.yukihookapi.hook.type.java.UnitType
 import com.zhufucdev.me.stub.Point
 import com.zhufucdev.me.stub.android
 import com.zhufucdev.me.stub.estimateDistance
-import com.zhufucdev.me.stub.offsetFixed
 import java.util.concurrent.Executor
 import java.util.function.Consumer
 import kotlin.collections.component1
@@ -73,7 +71,6 @@ class LocationHooker(private val scheduler: XposedScheduler) : YukiBaseHooker() 
                         }
                     }
             }
-            hookLocation()
         } else if (scheduler.hookingMethod.testProviderTrick) {
             testProviderTrick()
         }
@@ -467,39 +464,22 @@ class LocationHooker(private val scheduler: XposedScheduler) : YukiBaseHooker() 
         var succeeded = true
 
         try {
-            classLoader.loadAMapLocation().locationHook()
+            val listenerOf = mutableMapOf<Any, Any>()
+            val stateOf = mutableMapOf<Any, Boolean>()
+            val options = AMapClientOptions()
+            val factory = AMapLocationFactory(classLoader.loadAMapLocation())
 
-            classLoader.loadAMapLocation().apply {
+            classLoader.loadAMapLocationClient().apply {
                 method {
-                    name = "getSatellites"
-                    emptyParam()
+                    name = "setLocationOption"
+                    param(classLoader.loadClass("com.amap.api.location.AMapLocationClientOption"))
                 }
                     .hook {
-                        replaceAny {
-                            scheduler.satellites
+                        before {
+                            options.set(instance, args[0])
                         }
                     }
 
-                method {
-                    name = "getAccuracy"
-                    emptyParam()
-                }
-                    .hook {
-                        replaceTo(5F)
-                    }
-            }
-        } catch (e: ClassNotFoundException) {
-            succeeded = false
-            if (log) {
-                loggerE(TAG, "Failed to hook AMap location", e)
-            }
-        }
-
-        try {
-            val listenerOf = mutableMapOf<Any, Any>()
-            val stateOf = mutableMapOf<Any, Boolean>()
-
-            classLoader.loadAMapLocationClient().apply {
                 method {
                     name = "setLocationListener"
                     param(classLoader.loadAMapListener())
@@ -531,16 +511,10 @@ class LocationHooker(private val scheduler: XposedScheduler) : YukiBaseHooker() 
                                 locationClass
                             )
                             val handler = Handler(Looper.getMainLooper())
+                            val client = instance
 
                             redirectListener(listener) {
-                                val android = it.point.android(speed = it.speed)
-                                // create an AMapLocation instance via reflection
-                                val amap =
-                                    locationClass.getConstructor(classOf<Location>())
-                                        .newInstance(android)
-                                // Location type 1 is GPS located
-                                locationClass.getMethod("setLocationType", IntType)
-                                    .invoke(amap, 1)
+                                val amap = factory.create(it, options.offset(client), scheduler.satellites)
                                 handler.post {
                                     method.invoke(listener, amap)
                                 }
@@ -582,36 +556,6 @@ class LocationHooker(private val scheduler: XposedScheduler) : YukiBaseHooker() 
         }
 
         return succeeded
-    }
-
-    private fun Class<*>.locationHook() {
-        method {
-            name = "getLatitude"
-            emptyParam()
-            returnType = DoubleType
-        }
-            .hook {
-                after {
-                    result = scheduler.location.offsetFixed().latitude
-                }
-            }
-
-        method {
-            name = "getLongitude"
-            emptyParam()
-            returnType = DoubleType
-        }
-            .hook {
-                after {
-                    result = scheduler.location.offsetFixed().longitude
-                }
-            }
-    }
-
-    private fun hookLocation() {
-        loggerI(TAG, "-- hook location --")
-
-        classOf<Location>().locationHook()
     }
 
     private fun testProviderTrick() {
