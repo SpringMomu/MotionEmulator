@@ -62,3 +62,24 @@ SDK 测试包，不替换设备上已有的定位插件。
 - 显式安排 KSP 在资源打包前生成 Xposed 入口描述文件，保证首次构建的 APK 也包含 `assets/xposed_init`。
 
 本 fork 的修改集中在定位分发、速度数值检查、轨迹生命周期、回归测试和独立构建接线。
+
+## 管理端的插件下载来源
+
+本 fork 的管理端将 WebSocket 插件的下载和更新检查统一接到
+[`release.json`](release.json)，APK 发布在本仓库的
+[WebSocket 插件 Release](https://github.com/SpringMomu/MotionEmulator/releases/tag/ws-plugin-v1.2.3)。
+版本比较使用 Android `versionCode`；已经安装相同或更高版本时不会提示降级。
+原作者目录中的同包名插件会被替换，其他插件仍使用配置的原目录。
+本仓库下载源不可用时不会退回旧 WebSocket 插件。
+
+后续发布需要使用同一签名证书签名，先发布可下载的 APK，再更新本文件旁的
+`release.json`（包名、版本号、下载地址和校验值）。不要提交签名私钥。
+`sha256` 用于发布核对；应用内仍复用原有下载器及 Android 安装签名校验。
+
+已经安装的上游管理端仍然使用它原来的下载入口，必须更新管理端才能采用上述逻辑。
+仅安装新插件不会修改管理端的网络请求。
+根目录管理端的 `local.defaults.properties` 只提供占位的地图密钥和关闭的可选上游服务，
+用于保证源码可以编译；实际使用地图必须在 `local.properties` 填入与自身包名及签名
+匹配的地图 API Key。管理端的 `manager-stub/` 保留该项目原本的 SDK 1.1.3，
+插件的独立 SDK 1.0.0 不受影响。根目录是上游开发分支，管理端与插件的完整协议兼容性
+需要在发布可用管理端前单独验证，不能仅凭编译通过替换手机里的稳定管理端。

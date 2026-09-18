@@ -1,12 +1,13 @@
 package com.zhufucdev.motion_emulator
 
-import com.zhufucdev.stub.Vector2D
-import com.zhufucdev.stub.MapProjector
+import com.zhufucdev.me.stub.Vector2D
+import com.zhufucdev.me.stub.MapProjector
 import org.junit.Assert.*
 import org.junit.Test
 import kotlin.random.Random
 
 class MapProjectorUnitTest {
+    private val random = Random(0)
     val dataset = buildList {
         val base =
             listOf(
@@ -16,8 +17,8 @@ class MapProjectorUnitTest {
                 Vector2D(70.0, 40.0)
             )
         repeat(100) {
-            val b = base[Random.nextInt(base.size)]
-            add(b + Vector2D(Random.nextDouble(), Random.nextDouble()))
+            val b = base[random.nextInt(base.size)]
+            add(b + Vector2D(random.nextDouble(), random.nextDouble()))
         }
     }
 

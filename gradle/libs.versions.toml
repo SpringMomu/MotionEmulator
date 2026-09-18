@@ -1,5 +1,5 @@
 [versions]
-agp = "8.4.0-alpha13"
+agp = "8.5.1"
 kotlin = "1.9.21"
 coreKtx = "1.12.0"
 preference = "1.2.1"
@@ -31,7 +31,6 @@ gmaps = "3.2.1"
 mapsUtils = "3.4.0"
 spongycastle = "1.58.0.0"
 
-stub = "1.1.3"
 update = "1.0.0"
 sdk = "1.0.0"
 
@@ -75,7 +74,7 @@ ktor-server-contentnegotiation = { group = "io.ktor", name = "ktor-server-conten
 ktor-server-websockets = { group = "io.ktor", name = "ktor-server-websockets", version.ref = "ktor" }
 ktor-server-websockets-jvm = { group = "io.ktor", name = "ktor-server-websockets-jvm", version.ref = "ktor" }
 kotlin-reflect = { group = "org.jetbrains.kotlin", name = "kotlin-reflect", version.ref = "kotlin" }
-redempt-crunch = { group = "com.github.Redempt", name = "Crunch", version.ref = "crunch" }
+redempt-crunch = { group = "com.github.boxbeam", name = "Crunch", version.ref = "crunch" }
 google-guava = { group = "com.google.guava", name = "guava", version.ref = "guava" }
 aventrix-jnanoid = { group = "com.aventrix.jnanoid", name = "jnanoid", version.ref = "jnanoid" }
 apache-commons-compress = { group = "org.apache.commons", name = "commons-compress", version.ref = "compress" }
@@ -86,11 +85,11 @@ google-maps-utils = { group = "com.google.maps.android", name = "android-maps-ut
 google-gms-maps = { group = "com.google.android.gms", name = "play-services-maps", version.ref = "playMaps" }
 madgag-spongycastle = { group = "com.madgag.spongycastle", name = "bcpkix-jdk15on", version.ref = "spongycastle" }
 
-stub = { group = "com.zhufucdev.me", name = "stub", version.ref = "stub" }
 update = { group = "com.zhufucdev.update", name = "app", version.ref = "update" }
 sdk = { group = "com.zhufucdev.sdk", name = "kotlin", version.ref = "sdk" }
 
 [plugins]
+androidLibrary = { id = "com.android.library", version.ref = "agp" }
 androidApplication = { id = "com.android.application", version.ref = "agp" }
 jetbrainsKotlinAndroid = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

@@ -363,7 +363,7 @@ private fun LazyListScope.operativeArea(
 
             val updater = remember {
                 when (val sc = it.state) {
-                    is PluginItemState.NotInstalled -> PluginDownloader(it.product!!.key, context)
+                    is PluginItemState.NotInstalled -> PluginDownloader(it.id, it.product!!.key, context)
                     is PluginItemState.Installed -> PluginUpdater(
                         sc.plugin,
                         context,

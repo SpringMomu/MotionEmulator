@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.secrets)
 }
 
+secrets { defaultPropertiesFileName = "local.defaults.properties" }
+
 android {
     compileSdk = 34
 
@@ -12,8 +14,8 @@ android {
         applicationId = "com.zhufucdev.motion_emulator"
         minSdk = 24
         targetSdk = 34
-        versionCode = 24
-        versionName = "1.2.2"
+        versionCode = 25
+        versionName = "1.2.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -62,7 +64,7 @@ android {
 dependencies {
     // Internal
     implementation(libs.sdk)
-    implementation(libs.stub)
+    implementation(project(":manager-stub"))
     implementation(libs.update)
     // Ktor
     implementation(libs.ktor.client.jvm)
@@ -118,6 +120,7 @@ dependencies {
     implementation(libs.google.gms.maps)
 
     testImplementation(libs.junit)
+    testImplementation("io.ktor:ktor-client-mock:2.3.4")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

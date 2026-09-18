@@ -20,6 +20,7 @@ import com.zhufucdev.motion_emulator.data.Traces
 import com.zhufucdev.motion_emulator.extension.AppUpdater
 import com.zhufucdev.motion_emulator.extension.defaultKtorClient
 import com.zhufucdev.motion_emulator.extension.setUpStatusBar
+import com.zhufucdev.motion_emulator.plugin.ForkPluginSource
 import com.zhufucdev.motion_emulator.plugin.Plugins
 import com.zhufucdev.motion_emulator.ui.model.AppViewModel
 import com.zhufucdev.motion_emulator.ui.model.EmulationsViewModel
@@ -76,10 +77,12 @@ class MainActivity : ComponentActivity() {
             PluginViewModel(
                 plugins = plugins,
                 downloadable = flow {
-                    val queries =
+                    // Show the fork even when the optional upstream catalog is unavailable.
+                    emit(ForkPluginSource.catalog(emptyList()).map { it.toPluginItem() })
+                    val queries = if (BuildConfig.server_uri.isBlank()) emptyList() else
                         defaultKtorClient.findAsset(BuildConfig.server_uri, "me", "plugin")
                     emit(
-                        queries.map {
+                        ForkPluginSource.catalog(queries).map {
                             it.packageId?.let { plugins.firstOrNull { p -> p.id == it } }
                                 ?: it.toPluginItem()
                         }
