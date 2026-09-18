@@ -20,42 +20,45 @@ Trick your fitness app or your favourite game. Make you king of the world.
 To learn about the latest software and its tricks, refer to
 [Steve's Blog](https://zhufucdev.com/article/RTyhZArsyD2JKPbdHEviU).
 
-## Build Instructions
+## Releases and build
 
-Build and maintain this project with the latest Android Studio Canary
-(currently Hedgehog | 2023.1.1 Canary 15) because this project is pretty
-radical.
+[Manager 1.2.4 (OpenStreetMap) and fixed plugin 1.2.3](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.4)
+are published together. The manager's download catalog and self-update use this fork.
+The manager uses the upstream **stable 1.2.2** UI/data baseline with the fixes applied;
+its [SDK models](manager-stub/README.md) are shared with the plugin.
 
-This app contains sdk from Amap and Google Maps, thus **api keys** are
-required.
-Obtain them from [here](https://console.amap.com/dev/key/app)
-[and here](https://developers.google.com/maps/documentation/android-sdk/start)
+The default map is **OpenStreetMap**, with no API key required. Existing unconfigured
+AMap/Google preferences migrate to OSM. Saved GCJ-02 traces are converted for display
+without rewriting the saved route. New OSM traces use WGS84. Search uses the Android
+system geocoder where available, and accepts `latitude, longitude` without a geocoder.
+OSM needs network access, has no satellite layer, and place-search coverage depends
+on the device geocoder. Visible attribution, an app-specific User-Agent and local
+HTTP-aware caching follow the [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/).
+No bulk/offline tile download is offered.
+
+Use JDK 17 or 21, Android SDK 34 and the included Gradle 8.9 wrapper. Set `sdk.dir` in
+an ignored `local.properties`. Placeholder map keys in `local.defaults.properties`
+allow a working OSM build. Only configure your own `AMAP_SDK_KEY`, `amap.web.key` and/or
+`GCP_MAPS_KEY` if you want those optional providers; Android keys must match your
+package and signing certificate. The optional `server_uri` supplies additional
+plugin catalog entries; leave it blank to use only this fork's catalog.
+
 ```shell
-echo amap.web.key="<Your Key>" >> local.properties
-echo AMAP_SDK_KEY="<Your Key>" >> local.properties
-echo GCP_MAPS_KEY="<Your Key>" >> local.properties
+./gradlew :app:testDebugUnitTest :app:assembleRelease
+cd ws-plugin
+./gradlew :stub:testDebugUnitTest :xposed:testDebugUnitTest :app:assembleRelease
 ```
 
-My own service is involved to provide online features like self update,
-which is optional and shouldn't be included in unofficial builds.
+The manager's universal unsigned APK is in `app/build/outputs/apk/release/`.
+Sign release APKs with your own persistent identity; never commit keys or passwords.
+Upstream-signed installations require a data-preserving migration because Android
+cannot overwrite them with this fork's certificate. Subsequent fork updates can be
+installed normally with the same fork certificate.
 
-However, it is still possible to build with your own service.
-```shell
-cat >> local.properties << EOF
-server_uri="<Your Server>"
-product="<You Decide>"
-EOF
-```
-
-The `server_uri` is supposed to be an HTTP/HTTPS RESTful that implements
-a certain protocol. You can get an example by 
-[looking at my codebase](https://github.com/zhufucdev/api.zhufucdev).
-
-By the way, in case you are not familiar with Android dev, fill in
-your own SDK like so:
-```shell
-echo sdk.dir=<Your SDK Full Path> >> local.properties
-```
+Publishing: upload and verify the APK in a draft release first, update `release.json`
+with its package, version code, version name, final URL and SHA-256, push the matching
+source commit, then publish the release at that commit. Follow the analogous steps
+in [ws-plugin/README.md](ws-plugin/README.md) when changing the plugin.
 
 ## License
 

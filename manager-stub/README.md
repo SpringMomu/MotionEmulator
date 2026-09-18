@@ -1,12 +1,12 @@
-# Manager SDK stub
+# Shared manager/plugin SDK
 
-`stub/src/main` sources from MotionEmulatorSdk **1.1.3**, commit
-[`2861038abea854db90b8b408dc955174cb6a6269`](https://github.com/zhufucdev/MotionEmulatorSdk/tree/2861038abea854db90b8b408dc955174cb6a6269).
-The manager already declared this version; its Maven artifact is no longer available.
-The Android build configuration is local, with publishing/signing removed.
-Source logic is unchanged; a trailing blank line was removed for the whitespace check.
-See [LICENSE](LICENSE) for the upstream Apache-2.0 license.
+This Gradle module compiles `../ws-plugin/sdk/stub/src/main` directly. The manager
+and WebSocket plugin use the same SDK **1.0.0** models, serializers and coordinate
+conversion code, including the finite-speed fix. There is no second SDK copy to drift.
 
-This module belongs to the root manager project. The independently built `ws-plugin`
-continues using its own SDK 1.0.0 baseline for compatibility with the released manager.
-Do not substitute one stub for the other without a separate protocol migration.
+The release manager is based on upstream stable 1.2.2, commit
+[`641a80e48fbabf7faabaefde83cf36e1b7472ae0`](https://github.com/zhufucdev/MotionEmulator/tree/641a80e48fbabf7faabaefde83cf36e1b7472ae0),
+matching the released plugin's protocol and existing trace/preferences format.
+The previous development-only SDK 1.1.3 copy has been removed.
+
+See [plugin provenance](../ws-plugin/README.md) and [LICENSE](LICENSE).

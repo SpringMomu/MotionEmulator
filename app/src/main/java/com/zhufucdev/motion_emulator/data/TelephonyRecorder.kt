@@ -21,6 +21,7 @@ import com.zhufucdev.me.stub.CellTimeline
 import java.util.Timer
 import java.util.concurrent.Executor
 import kotlin.concurrent.timer
+import kotlin.math.abs
 import kotlin.reflect.full.memberFunctions
 
 object TelephonyRecorder {
@@ -46,18 +47,33 @@ object TelephonyRecorder {
         fun elapsed(): Float = (System.currentTimeMillis() - start) / 1000F
         val cancel: () -> Unit
 
+        @Synchronized
+        fun mergeIfPossible(moment: CellMoment): CellMoment {
+            if (timeline.isNotEmpty() && abs(moment.elapsed - timeline.last().elapsed) <= VERTICAL_PERIOD) {
+                val target = timeline.last()
+                if (!target.isSameTypeOf(moment)) {
+                    timeline.removeLast()
+                    val merged = target.merge(moment)
+                    timeline.add(merged)
+                    return merged
+                }
+            }
+            timeline.add(moment)
+            return moment
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             val telephonyCallback = object : TelephonyCallback(), TelephonyCallback.CellInfoListener, TelephonyCallback.CellLocationListener {
                 override fun onCellInfoChanged(cellInfo: MutableList<CellInfo>) {
                     val moment = CellMoment(elapsed(), cellInfo)
-                    timeline.add(moment)
-                    updateListener?.invoke(moment)
+                    val merged = mergeIfPossible(moment)
+                    updateListener?.invoke(merged)
                 }
 
                 override fun onCellLocationChanged(location: CellLocation) {
                     val moment = CellMoment(elapsed(), location = location)
-                    timeline.add(moment)
-                    updateListener?.invoke(moment)
+                    val merged = mergeIfPossible(moment)
+                    updateListener?.invoke(merged)
                 }
             }
 
@@ -71,7 +87,7 @@ object TelephonyRecorder {
                 override fun onCellInfoChanged(cellInfo: MutableList<CellInfo>?) {
                     if (cellInfo != null) {
                         val moment = CellMoment(elapsed(), cellInfo)
-                        timeline.add(moment)
+                        mergeIfPossible(moment)
                         updateListener?.invoke(moment)
                     }
                 }
@@ -80,8 +96,8 @@ object TelephonyRecorder {
                 override fun onCellLocationChanged(location: CellLocation?) {
                     if (location != null) {
                         val moment = CellMoment(elapsed(), location = location)
-                        timeline.add(moment)
-                        updateListener?.invoke(moment)
+                        val merged = mergeIfPossible(moment)
+                        updateListener?.invoke(merged)
                     }
                 }
             }
@@ -95,8 +111,8 @@ object TelephonyRecorder {
                     timer = timer("neighboring daemon", period = 1500L) {
                         val infos = method.call(manager) as List<NeighboringCellInfo>? ?: return@timer
                         val moment = CellMoment(elapsed(), neighboring = infos)
-                        timeline.add(moment)
-                        updateListener?.invoke(moment)
+                        val merged = mergeIfPossible(moment)
+                        updateListener?.invoke(merged)
                     }
                 }
             }
@@ -119,7 +135,7 @@ object TelephonyRecorder {
 
             override fun summarize(): CellTimeline {
                 cancel()
-                return CellTimeline(NanoIdUtils.randomNanoId(), timeline)
+                return CellTimeline(NanoIdUtils.randomNanoId(), null, start, timeline)
             }
         }
     }
@@ -139,7 +155,7 @@ object TelephonyRecorder {
         }
 
         override fun summarize(): CellTimeline {
-            return CellTimeline(NanoIdUtils.randomNanoId(), emptyList())
+            return CellTimeline(NanoIdUtils.randomNanoId(), null, 0, emptyList())
         }
     }
 }

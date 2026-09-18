@@ -8,6 +8,10 @@ android {
     namespace = "com.zhufucdev.me"
     compileSdk = 34
     defaultConfig { minSdk = 24 }
+    sourceSets.getByName("main") {
+        java.setSrcDirs(listOf("../ws-plugin/sdk/stub/src/main/java"))
+        manifest.srcFile("../ws-plugin/sdk/stub/src/main/AndroidManifest.xml")
+    }
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17

@@ -24,11 +24,11 @@ import kotlin.math.sign
 fun Swipeable(
     foreground: @Composable () -> Unit,
     fillColor: Color = MaterialTheme.colorScheme.onSurface,
-    container: @Composable (@Composable () -> Unit) -> Unit = { it() },
+    container: @Composable (@Composable () -> Unit) -> Unit,
     backgroundEnd: (@Composable RowScope.() -> Unit)? = null,
     backgroundStart: (@Composable RowScope.() -> Unit)? = null,
-    rearActivated: (() -> Unit)? = null,
-    headActivated: (() -> Unit)? = null,
+    endActivated: (() -> Unit)? = null,
+    startActivated: (() -> Unit)? = null,
     fractionScale: Float = 0.5F,
     fractionWidth: Dp = 20.dp,
     revealedOffsetX: Dp = 80.dp
@@ -45,8 +45,8 @@ fun Swipeable(
         }
 
     var maxWidthPx by remember { mutableStateOf(0) }
-    val localEndActivated by rememberUpdatedState(rearActivated)
-    val localStartActivated by rememberUpdatedState(headActivated)
+    val localEndActivated by rememberUpdatedState(endActivated)
+    val localStartActivated by rememberUpdatedState(startActivated)
 
     LaunchedEffect(key1 = animator) {
         if (animator.value.isNaN()) return@LaunchedEffect
@@ -104,7 +104,7 @@ fun Swipeable(
                             onDragEnd = {
                                 state =
                                     if (abs(offsetX) in targetOffsetPx..(targetOffsetPx + fractionWidth.toPx())) {
-                                        if (offsetX > 0 && headActivated != null || offsetX < 0 && rearActivated != null)
+                                        if (offsetX > 0 && startActivated != null || offsetX < 0 && endActivated != null)
                                             SwipeableState.Revealed
                                         else
                                             SwipeableState.Hidden

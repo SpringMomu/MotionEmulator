@@ -14,8 +14,8 @@ android {
         applicationId = "com.zhufucdev.motion_emulator"
         minSdk = 24
         targetSdk = 34
-        versionCode = 25
-        versionName = "1.2.3"
+        versionCode = 26
+        versionName = "1.2.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
@@ -26,6 +26,8 @@ android {
     splits {
         abi {
             isEnable = true
+            reset()
+            include("arm64-v8a", "armeabi-v7a", "x86_64")
             isUniversalApk = true
         }
     }
@@ -65,7 +67,7 @@ dependencies {
     // Internal
     implementation(libs.sdk)
     implementation(project(":manager-stub"))
-    implementation(libs.update)
+    implementation(project(":manager-update"))
     // Ktor
     implementation(libs.ktor.client.jvm)
     implementation(libs.ktor.client.okhttp)
@@ -79,6 +81,16 @@ dependencies {
     implementation(libs.ktor.server.websockets)
     implementation(libs.ktor.server.websockets.jvm)
     implementation(libs.madgag.spongycastle)
+    implementation("org.osmdroid:osmdroid-android:6.1.20")
+    implementation("com.google.android.material:material:1.11.0")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+    implementation("androidx.navigation:navigation-fragment-ktx:2.7.6")
+    implementation("androidx.navigation:navigation-ui-ktx:2.7.6")
+    implementation("androidx.navigation:navigation-dynamic-features-fragment:2.7.6")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.7.0")
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    implementation("net.edwardday.serialization:kprefs:0.12.0")
     // AndroidX
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.preference.ktx)

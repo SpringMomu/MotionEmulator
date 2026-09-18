@@ -11,9 +11,10 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.res.painterResource
 import androidx.constraintlayout.compose.ConstraintLayout
 import com.zhufucdev.motion_emulator.R
-import com.zhufucdev.motion_emulator.ui.theme.PaddingCommon
-import com.zhufucdev.motion_emulator.ui.theme.PaddingSmall
+import com.zhufucdev.motion_emulator.ui.theme.paddingCommon
+import com.zhufucdev.motion_emulator.ui.theme.paddingSmall
 
+@OptIn(ExperimentalAnimationApi::class)
 @Composable
 fun Expandable(
     icon: @Composable () -> Unit,
@@ -41,17 +42,17 @@ fun Expandable(
         ) {
             ConstraintLayout(
                 Modifier.padding(
-                    start = PaddingCommon * 2,
-                    end = PaddingCommon * 2,
-                    top = PaddingCommon,
-                    bottom = PaddingCommon
+                    start = paddingCommon * 2,
+                    end = paddingCommon * 2,
+                    top = paddingCommon,
+                    bottom = paddingCommon
                 )
                     .fillMaxWidth()
             ) {
                 val (s, h, o, i) = createRefs()
                 Box(
                     Modifier
-                        .padding(end = PaddingSmall)
+                        .padding(end = paddingSmall)
                         .constrainAs(s) {
                             start.linkTo(parent.start)
                             top.linkTo(parent.top)
@@ -68,7 +69,7 @@ fun Expandable(
                             top.linkTo(parent.top)
                             bottom.linkTo(parent.bottom)
                         }
-                        .padding(start = PaddingCommon)
+                        .padding(start = paddingCommon)
                 ) {
                     CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.titleMedium) {
                         header()
@@ -83,7 +84,7 @@ fun Expandable(
                             top.linkTo(parent.top)
                             bottom.linkTo(parent.bottom)
                         }
-                        .padding(start = PaddingSmall)
+                        .padding(start = paddingSmall)
                 ) { e ->
                     if (!e) {
                         CompositionLocalProvider(LocalTextStyle provides MaterialTheme.typography.labelMedium) {
@@ -117,9 +118,9 @@ fun Expandable(
         ) {
             Box(
                 Modifier.padding(
-                    start = PaddingCommon * 2,
-                    end = PaddingCommon * 2,
-                    bottom = PaddingCommon
+                    start = paddingCommon * 2,
+                    end = paddingCommon * 2,
+                    bottom = paddingCommon
                 )
             ) {
                 body()

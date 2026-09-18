@@ -10,7 +10,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import com.zhufucdev.motion_emulator.R
-import com.zhufucdev.motion_emulator.ui.theme.PaddingCommon
+import com.zhufucdev.motion_emulator.ui.VerticalSpacer
+import com.zhufucdev.motion_emulator.ui.theme.paddingCommon
 
 @Composable
 fun Appendix(
@@ -25,7 +26,7 @@ fun Appendix(
             contentDescription = iconDescription,
             tint = color
         )
-        VerticalSpacer(PaddingCommon)
+        VerticalSpacer(paddingCommon)
         CompositionLocalProvider(
             LocalContentColor provides color,
             LocalTextStyle provides MaterialTheme.typography.bodyMedium

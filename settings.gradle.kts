@@ -19,4 +19,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "MotionEmulator"
 
-include(":app", ":manager-stub")
+include(":app", ":manager-stub", ":manager-update")

@@ -2,11 +2,19 @@ package com.zhufucdev.motion_emulator.extension
 
 import android.content.Context
 import com.zhufucdev.motion_emulator.BuildConfig
+import java.io.File
+import androidx.core.content.pm.PackageInfoCompat
+import com.zhufucdev.motion_emulator.plugin.ForkManagerSource
 
-fun AppUpdater(product: String, context: Context) = com.zhufucdev.update.AppUpdater(
+fun Updater(product: String, context: Context) = com.zhufucdev.update.Updater(
     BuildConfig.server_uri,
     product,
     context,
+    File(context.externalCacheDir, "update"),
+    releaseResolver = if (product == BuildConfig.product) ({ client ->
+        ForkManagerSource.check(client, PackageInfoCompat.getLongVersionCode(
+            context.packageManager.getPackageInfo(context.packageName, 0)))
+    }) else null
 )
 
-fun AppUpdater(context: Context) = AppUpdater(BuildConfig.product, context)
+fun Updater(context: Context) = Updater(BuildConfig.product, context)

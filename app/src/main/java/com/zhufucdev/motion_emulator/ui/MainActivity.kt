@@ -1,40 +1,20 @@
 package com.zhufucdev.motion_emulator.ui
 
+import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
-import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
-import androidx.lifecycle.ViewModelProvider
-import androidx.lifecycle.viewmodel.initializer
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.zhufucdev.motion_emulator.BuildConfig
-import com.zhufucdev.motion_emulator.data.Telephonies
-import com.zhufucdev.motion_emulator.data.DataLoader
-import com.zhufucdev.motion_emulator.data.Emulations
-import com.zhufucdev.motion_emulator.data.Motions
-import com.zhufucdev.motion_emulator.data.Traces
-import com.zhufucdev.motion_emulator.extension.AppUpdater
-import com.zhufucdev.motion_emulator.extension.defaultKtorClient
-import com.zhufucdev.motion_emulator.extension.setUpStatusBar
-import com.zhufucdev.motion_emulator.plugin.ForkPluginSource
+import com.zhufucdev.motion_emulator.extension.Updater
+import com.zhufucdev.motion_emulator.extension.lazySharedPreferences
 import com.zhufucdev.motion_emulator.plugin.Plugins
-import com.zhufucdev.motion_emulator.ui.model.AppViewModel
-import com.zhufucdev.motion_emulator.ui.model.EmulationsViewModel
-import com.zhufucdev.motion_emulator.ui.model.ManagerViewModel
-import com.zhufucdev.motion_emulator.ui.model.PluginViewModel
-import com.zhufucdev.motion_emulator.ui.model.toPluginItem
+import com.zhufucdev.motion_emulator.extension.setUpStatusBar
+import com.zhufucdev.motion_emulator.ui.home.AppHome
 import com.zhufucdev.motion_emulator.ui.theme.MotionEmulatorTheme
-import com.zhufucdev.sdk.findAsset
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.withContext
 
-class MainActivity : ComponentActivity() {
-    @OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
+class MainActivity : AppCompatActivity() {
+    private val preferences by lazySharedPreferences()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setUpStatusBar()
@@ -42,77 +22,21 @@ class MainActivity : ComponentActivity() {
         setContent {
             MotionEmulatorTheme {
                 val updater = remember {
-                    AppUpdater(this)
+                    Updater(this)
                 }
                 LaunchedEffect(Unit) {
                     updater.check()
                 }
 
-                AppHome(calculateWindowSizeClass(this))
-            }
-        }
-    }
-
-    override val defaultViewModelProviderFactory: ViewModelProvider.Factory = viewModelFactory {
-        initializer {
-            AppViewModel(
-                updater = AppUpdater(this@MainActivity)
-            )
-        }
-
-        initializer {
-            Emulations.require(this@MainActivity)
-            EmulationsViewModel(
-                configs = Emulations.list()
-            )
-        }
-
-        initializer {
-            Plugins.init(this@MainActivity)
-            val enabled = Plugins.enabled
-            val all = Plugins.available
-            val plugins = enabled.map { it.toPluginItem(true) } + (all - enabled.toSet()).map {
-                it.toPluginItem(false)
-            }
-            PluginViewModel(
-                plugins = plugins,
-                downloadable = flow {
-                    // Show the fork even when the optional upstream catalog is unavailable.
-                    emit(ForkPluginSource.catalog(emptyList()).map { it.toPluginItem() })
-                    val queries = if (BuildConfig.server_uri.isBlank()) emptyList() else
-                        defaultKtorClient.findAsset(BuildConfig.server_uri, "me", "plugin")
-                    emit(
-                        ForkPluginSource.catalog(queries).map {
-                            it.packageId?.let { plugins.firstOrNull { p -> p.id == it } }
-                                ?: it.toPluginItem()
-                        }
-                    )
-                }
-            )
-        }
-
-        initializer {
-            val stores = listOf(Traces, Motions, Telephonies)
-            val data = mutableStateListOf<DataLoader<*>>()
-            ManagerViewModel(
-                data = data,
-                dataLoader = flow {
-                    emit(false)
-                    if (data.isEmpty()) {
-                        withContext(Dispatchers.IO) {
-                            data.addAll(
-                                stores.flatMap {
-                                    it.require(this@MainActivity)
-                                    it.list()
-                                }.sortedBy { it.id }
-                            )
-                        }
+                AppHome(updater = updater, enabledPlugins = Plugins.countEnabled) {
+                    val target = Intent(this, it.activity)
+                    if (it.mapping && !preferences.contains("map_provider")) {
+                        target.setClass(this, MapPendingActivity::class.java)
+                        target.putExtra("target", it.activity.name)
                     }
-                    emit(true)
-                },
-                stores = stores,
-                context = this@MainActivity
-            )
+                    startActivity(target)
+                }
+            }
         }
     }
 }

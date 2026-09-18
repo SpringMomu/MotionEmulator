@@ -19,39 +19,38 @@ Motion Emulator是个模拟连续定位和传感器变化的应用平台。
 
 要了解最新、最全面的使用方法和注意事项，请参阅[Steve的博客](https://zhufucdev.com/article/G1lNhmtzI5-RQnVmYEbXm)
 
-## 构建指南
+## 发布与构建
 
-如果你是开发者，请使用最新的Android Studio金丝雀版（当前是Hedgehog | 2023.1.1 Canary 15）构建和维护这个项目，
-因为这个项目十分的激进
+[管理端 1.2.4（OpenStreetMap）与修复插件 1.2.3](https://github.com/SpringMomu/MotionEmulator/releases/tag/motionemulator-v1.2.4)
+已配套提供。管理端的插件下载与自身更新均使用本 fork。管理端以原作者稳定版 1.2.2 为基础，
+保留旧路线、配置和协议，并与插件直接共用 [SDK 1.0.0 源码](manager-stub/README.md)。
 
-项目使用了高德地图和Google Maps的API，你得申请些自己的，网址在[这儿](https://console.amap.com/dev/key/app)和
-[这儿](https://developers.google.com/maps/documentation/android-sdk/start)
+默认地图为 **OpenStreetMap，无需地图 Key**。未配置 Key 的高德或 Google 设置会自动迁移。
+已有高德 GCJ-02 路线仅在显示时转换坐标，不改写原路线；新绘制路线保存为 WGS84。
+地点搜索使用 Android 系统地理编码服务，也支持直接输入 `纬度, 经度`。
+地图需要联网，不提供卫星图层；地名搜索覆盖范围取决于手机系统服务。
+遵守 [OSM 瓦片使用政策](https://operations.osmfoundation.org/policies/tiles/)，显示版权归属，
+设置独立 User-Agent 并启用本地缓存，不提供批量下载离线地图。
 
-申请完别忘了做些事情
+构建使用 JDK 17 或 21、Android SDK 34 和仓库自带 Gradle 8.9。
+在不提交的 `local.properties` 中设置 `sdk.dir`，即可使用默认 OSM 配置构建。
+只有启用高德或 Google 时，才需要配置自己的 `AMAP_SDK_KEY`、`amap.web.key`、`GCP_MAPS_KEY`；
+Android 地图 Key 必须与自己的包名和签名证书匹配。
+可选 `server_uri` 用于额外插件目录，留空时仅使用本 fork 的目录。
+
 ```shell
-echo amap.web.key="<Your Key>" >> local.properties
-echo AMAP_SDK_KEY="<Your Key>" >> local.properties
-echo GCP_MAPS_KEY="<Your Key>" >> local.properties
+./gradlew :app:testDebugUnitTest :app:assembleRelease
+cd ws-plugin
+./gradlew :stub:testDebugUnitTest :xposed:testDebugUnitTest :app:assembleRelease
 ```
 
-我的私有服务被用来提供一些在线特性，例如自检查更新。这些服务是可选的，并且不会被包括在
-第三方构建中。
+管理端通用未签名 APK 位于 `app/build/outputs/apk/release/`。发布使用固定的自己的签名，
+不要提交签名密钥或密码。原作者签名的安装需要先妥善迁移数据，无法直接覆盖；
+之后本 fork 的同签名更新可以正常覆盖安装。
 
-但还是可以用你自己的服务来构建的
-```shell
-cat >> local.properties << EOF
-server_uri="<Your Server>"
-product="<You Decide>"
-EOF
-```
-
-`server_uri`是一个HTTP/HTTPS的RESTful API，它实现了特定的一些协议。你可以通过
-[查看我的代码库](https://github.com/zhufucdev/api.zhufucdev)来了解这是一个怎样的协议。
-
-顺便说一句，万一你不熟悉Android开发，你要把自己的SDK填进去，就像这样：
-```shell
-echo sdk.dir=<Your SDK Full Path> >> local.properties
-```
+发布时先把 APK 上传到草稿 Release 并校验，随后将包名、版本号、versionCode、最终下载 URL
+及 SHA-256 写入根目录 `release.json`，推送源码后在对应提交发布 Release。
+插件清单位于 `ws-plugin/release.json`，维护步骤见 [插件说明](ws-plugin/README.md)。
 
 ## 营业执照
 

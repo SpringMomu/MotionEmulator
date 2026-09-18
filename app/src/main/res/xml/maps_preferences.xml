@@ -8,7 +8,7 @@
             app:icon="@drawable/ic_baseline_map_24"
             app:entries="@array/map_entries"
             app:entryValues="@array/map_values"
-            app:defaultValue="gcp_maps"
+            app:defaultValue="osm"
             app:useSimpleSummaryProvider="true"/>
 
     <ListPreference
@@ -17,6 +17,6 @@
             app:icon="@drawable/ic_baseline_search_24"
             app:entries="@array/map_entries"
             app:entryValues="@array/map_values"
-            app:defaultValue="gcp_maps"
+            app:defaultValue="osm"
             app:useSimpleSummaryProvider="true"/>
 </PreferenceScreen>

@@ -31,24 +31,26 @@ object ForkPluginSource {
             it.packageId != PACKAGE_NAME && it.key != PRODUCT_KEY
         }
 
-    suspend fun check(client: HttpClient, installedVersionCode: Long? = null): ReleaseAsset? {
+    suspend fun check(client: HttpClient, installedVersionCode: Long? = null): ReleaseAsset? =
+        checkManifest(client, MANIFEST_URL, PACKAGE_NAME, 4, "MotionEmulator-WebSocket-SpringMomu", installedVersionCode)
+
+    internal suspend fun checkManifest(
+        client: HttpClient, manifestUrl: String, packageName: String, minimumVersionCode: Long,
+        cacheName: String, installedVersionCode: Long?
+    ): ReleaseAsset? {
         return try {
-            val response = client.get(MANIFEST_URL)
+            val response = client.get(manifestUrl)
             if (!response.status.isSuccess()) return null
             val release = json.decodeFromString<PluginRelease>(response.bodyAsText())
-            if (release.packageName != PACKAGE_NAME || release.versionCode < 4 ||
+            if (release.packageName != packageName || release.versionCode < minimumVersionCode ||
                 release.versionName.isBlank() ||
                 !release.url.startsWith(RELEASE_URL_PREFIX) || !release.url.endsWith(".apk")
             ) return null
-            if (installedVersionCode != null && release.versionCode <= installedVersionCode) {
-                return null
-            }
-            // Keep a fork-specific cache name so an upstream APK cannot be reused.
-            ReleaseAsset(release.versionName, "MotionEmulator-WebSocket-SpringMomu", release.url)
+            if (installedVersionCode != null && release.versionCode <= installedVersionCode) return null
+            ReleaseAsset(release.versionName, cacheName, release.url)
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
-            // An unavailable fork must never fall back to the old upstream plugin.
             null
         }
     }
